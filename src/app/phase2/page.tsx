@@ -11,6 +11,7 @@ import { VoiceRecorder } from '@/components/VoiceRecorder';
 import { Button } from '@/components/ui/button';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
+import { getAgentResponse } from '@/lib/openai';
 
 interface Message {
   speaker: string;
@@ -39,13 +40,10 @@ export default function PhaseTwoPage() {
     setIsSubmitting(true);
     const newLog: Message[] = [{ speaker: 'You', text: participantMessage }];
 
-    // Simulated AI agent responses (replace with GPT later)
-    agentProfiles.forEach((agent) => {
-      newLog.push({
-        speaker: agent.name,
-        text: `As a ${agent.profile.ideology} ${agent.profile.occupation}, I chose my policy based on...`
-      });
-    });
+    for (const agent of agentProfiles) {
+      const reply = await getAgentResponse(agent.name, participantMessage, currentCategory.title);
+      newLog.push({ speaker: agent.name, text: reply });
+    }
 
     setChatLog(newLog);
     setIsSubmitting(false);
