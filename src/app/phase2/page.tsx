@@ -17,6 +17,15 @@ interface Message {
   text: string;
 }
 
+interface PolicyOption {
+  id: string;
+  text: string;
+  cost: number;
+}
+
+type Votes = Record<string, string>; // categoryId -> optionId
+type FinalPackage = Record<string, PolicyOption>;
+
 export default function PhaseTwoPage() {
   const router = useRouter();
   const [categoryIndex, setCategoryIndex] = useState(0);
@@ -24,15 +33,24 @@ export default function PhaseTwoPage() {
   const [participantMessage, setParticipantMessage] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [votingStage, setVotingStage] = useState(false);
-  const [votes, setVotes] = useState<any>({});
-  const [finalPackage, setFinalPackage] = useState<any>({});
+  const [votes, setVotes] = useState<Votes>({});
+  const [selectedChoice, setSelectedChoice] = useState<PolicyOption | null>(null);
 
   const currentCategory = policyOptions[categoryIndex];
 
   useEffect(() => {
     setChatLog([]);
     setParticipantMessage('');
-  }, [categoryIndex]);
+
+    if (typeof window !== 'undefined') {
+      const data = JSON.parse(localStorage.getItem('policyChoices') || '{}');
+      if (data[currentCategory.id]) {
+        setSelectedChoice(data[currentCategory.id]);
+      } else {
+        setSelectedChoice(null);
+      }
+    }
+  }, [categoryIndex, currentCategory.id]);
 
   const handleParticipantSubmit = async () => {
     if (!participantMessage.trim()) return;
@@ -61,7 +79,7 @@ export default function PhaseTwoPage() {
   };
 
   const handleFinalizeVotes = () => {
-    const final: any = {};
+    const final: FinalPackage = {};
 
     policyOptions.forEach((cat) => {
       const allVotes = [votes[cat.id]]; // participant
@@ -131,17 +149,20 @@ export default function PhaseTwoPage() {
         Category {categoryIndex + 1} of {policyOptions.length}: {currentCategory.title}
       </h1>
 
-      {(() => {
-        const selectedChoice = JSON.parse(localStorage.getItem('policyChoices') || '{}')[currentCategory.id];
-        return selectedChoice ? (
-          <p className="text-md mb-4 text-gray-700 italic">
-            <strong>Your Choice:</strong> {selectedChoice.text}{' '}
-            <span className="text-gray-500">(Cost: {selectedChoice.cost})</span>
-          </p>
-        ) : null;
-      })()}
+      {selectedChoice && (
+        <p className="text-md mb-4 text-gray-700 italic">
+          <strong>Your Choice:</strong> {selectedChoice.text}{' '}
+          <span className="text-gray-500">(Cost: {selectedChoice.cost})</span>
+        </p>
+      )}
 
-      <ChatPanel messages={chatLog.length ? chatLog : [{ speaker: 'System', text: 'Please share your justification to begin.' }]} />
+      <ChatPanel
+        messages={
+          chatLog.length
+            ? chatLog
+            : [{ speaker: 'System', text: 'Please share your justification to begin.' }]
+        }
+      />
 
       <div className="mt-4">
         <VoiceRecorder

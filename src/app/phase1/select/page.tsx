@@ -8,20 +8,32 @@ import { CategoryCard } from '@/components/CategoryCard';
 import { policyOptions } from '@/constants/policies';
 import { motion } from 'framer-motion';
 
+// Define the type for a policy option
+interface PolicyOption {
+  id: string;
+  text: string;
+  cost: number;
+}
+
+// Type for selections object
+type Selections = {
+  [category: string]: PolicyOption;
+};
+
 export default function PolicySelectionPage() {
-  const [selections, setSelections] = useState({});
-  const [totalCost, setTotalCost] = useState(0);
-  const [error, setError] = useState('');
+  const [selections, setSelections] = useState<Selections>({});
+  const [totalCost, setTotalCost] = useState<number>(0);
+  const [error, setError] = useState<string>('');
   const router = useRouter();
 
   useEffect(() => {
-    const sum = Object.values(selections).reduce((acc, item: any) => acc + (item?.cost || 0), 0);
+    const sum = Object.values(selections).reduce((acc, item) => acc + (item?.cost || 0), 0);
     setTotalCost(sum);
   }, [selections]);
 
-  const handleSelect = (category: string, option: any) => {
-    const newSelections = { ...selections, [category]: option };
-    const newTotal = Object.values(newSelections).reduce((acc, item: any) => acc + item.cost, 0);
+  const handleSelect = (category: string, option: PolicyOption) => {
+    const newSelections: Selections = { ...selections, [category]: option };
+    const newTotal = Object.values(newSelections).reduce((acc, item) => acc + item.cost, 0);
     if (newTotal <= 14) {
       setSelections(newSelections);
       setError('');
@@ -30,7 +42,7 @@ export default function PolicySelectionPage() {
     }
   };
 
-  const handleConfirm = () => {
+  const handleConfirm = (): void => {
     if (Object.keys(selections).length !== policyOptions.length) {
       setError('Please make a selection for each category.');
       return;
@@ -68,7 +80,7 @@ export default function PolicySelectionPage() {
               key={category.id}
               category={category}
               selectedOption={selections[category.id]}
-              onSelect={(option) => handleSelect(category.id, option)}
+              onSelect={(option: PolicyOption) => handleSelect(category.id, option)}
             />
           ))}
         </div>

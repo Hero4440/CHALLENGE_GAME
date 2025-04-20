@@ -1,28 +1,34 @@
 // src/lib/report.ts
+interface PolicyOption {
+  id: string;
+  optionText: string;
+  cost: number;
+}
 
 export function generateReportText() {
   const participantInfo = JSON.parse(localStorage.getItem('participantInfo') || '{}');
   const finalPackage = JSON.parse(localStorage.getItem('finalPackage') || '{}');
   const reflectionAnswers = JSON.parse(localStorage.getItem('reflectionAnswers') || '{}');
   const feedback = localStorage.getItem('aiFeedback') || 'No feedback generated.';
-
+  
   const userInfo = `Participant Information:
-` +
-    `• Age: ${participantInfo.age || 'N/A'}
-` +
-    `• Nationality: ${participantInfo.nationality || 'N/A'}
-` +
-    `• Occupation: ${participantInfo.occupation || 'N/A'}
-` +
-    `• Education Level: ${participantInfo.educationLevel || 'N/A'}
-` +
-    `• Displacement Experience: ${participantInfo.displacementExperience || 'N/A'}
-` +
-    `• Location: ${participantInfo.location || 'N/A'}
-`;
+  ` +
+  `• Age: ${participantInfo.age || 'N/A'}
+  ` +
+  `• Nationality: ${participantInfo.nationality || 'N/A'}
+  ` +
+  `• Occupation: ${participantInfo.occupation || 'N/A'}
+  ` +
+  `• Education Level: ${participantInfo.educationLevel || 'N/A'}
+  ` +
+  `• Displacement Experience: ${participantInfo.displacementExperience || 'N/A'}
+  ` +
+  `• Location: ${participantInfo.location || 'N/A'}
+  `;
+  const typedPackage = finalPackage as Record<string, PolicyOption>;
 
-  const policyLines = Object.entries(finalPackage).map(([cat, opt]: any) => {
-    return `• ${cat}: ${opt?.optionText || 'undefined'} (Cost: ${opt?.cost ?? '?'})`;
+  const policyLines = Object.entries(typedPackage).map(([cat, opt]) => {
+    return `• ${cat}: ${opt.optionText || 'undefined'} (Cost: ${opt.cost ?? '?'})`;
   }).join('\n');
 
   const reflectionLines = Object.entries(reflectionAnswers).map(([q, a]) => {

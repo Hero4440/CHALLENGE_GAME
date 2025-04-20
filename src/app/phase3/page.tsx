@@ -7,6 +7,13 @@ import { VoiceRecorder } from '@/components/VoiceRecorder';
 import { questions } from '@/constants/questions';
 import { downloadReport } from '@/lib/report';
 import { motion } from 'framer-motion';
+interface PolicyOption {
+    id: string;
+    text: string;
+    cost: number;
+  }
+  
+  type FinalPackage = Record<string, PolicyOption>;
 
 export default function PhaseThreePage() {
   const router = useRouter();
@@ -14,7 +21,7 @@ export default function PhaseThreePage() {
   const [loading, setLoading] = useState(false);
   const [showFeedback, setShowFeedback] = useState(false);
   const [feedback, setFeedback] = useState('');
-  const [finalPackage, setFinalPackage] = useState<any>(null);
+  const [finalPackage, setFinalPackage] = useState<FinalPackage | null>(null);
 
   useEffect(() => {
     try {
