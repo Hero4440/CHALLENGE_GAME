@@ -76,8 +76,8 @@ export default function PhaseOnePage() {
           >
             <option value="">Select your education level</option>
             <option value="High School">High School</option>
-            <option value="Bachelor's">Bachelor's</option>
-            <option value="Master's">Master's</option>
+            <option value="Bachelor's">Bachelors</option>
+            <option value="Master's">Masters</option>
             <option value="PhD">PhD</option>
             <option value="Other">Other</option>
           </select>
