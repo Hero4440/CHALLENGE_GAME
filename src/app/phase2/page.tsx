@@ -80,7 +80,8 @@ export default function PhaseTwoPage() {
 
   const handleFinalizeVotes = () => {
     const final: FinalPackage = {};
-
+    const aiVoteMap: Record<string, { [agentName: string]: string }> = {};
+    const aiReasons: Record<string, { [agentName: string]: string }> = {};
     policyOptions.forEach((cat) => {
       const allVotes = [votes[cat.id]]; // participant
       agentProfiles.forEach(() => {
@@ -99,11 +100,12 @@ export default function PhaseTwoPage() {
         final[cat.id] = winner;
       }
     });
-
     localStorage.setItem('finalPackage', JSON.stringify(final));
+    localStorage.setItem('aiVotes', JSON.stringify(aiVoteMap));
+    localStorage.setItem('aiVoteReasons', JSON.stringify(aiReasons));
     router.push('/phase3');
-  };
 
+  };
   if (votingStage) {
     return (
       <motion.div
