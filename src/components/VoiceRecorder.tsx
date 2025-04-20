@@ -1,7 +1,7 @@
 // VoiceRecorder.tsx
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 
@@ -13,44 +13,62 @@ interface VoiceRecorderProps {
 export function VoiceRecorder({ onTranscript, placeholder = 'Speak now...' }: VoiceRecorderProps) {
   const [recording, setRecording] = useState(false);
   const [transcript, setTranscript] = useState('');
-  const [recognition, setRecognition] = useState<any>(null);
+  const recognitionRef = useRef<any>(null);
+  const fullTranscriptRef = useRef('');
+  const shouldStopRef = useRef(false);
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
       const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
       if (SpeechRecognition) {
         const recog = new SpeechRecognition();
-        recog.continuous = false;
-        recog.interimResults = false;
+        recog.continuous = true;
+        recog.interimResults = true;
         recog.lang = 'en-US';
 
         recog.onresult = (event: any) => {
-          const text = event.results[0][0].transcript;
-          setTranscript(text);
-          onTranscript(text);
+          const results = Array.from(event.results);
+          const finalTranscript = results.map(r => r[0].transcript).join(' ');
+          fullTranscriptRef.current = finalTranscript.trim();
+          setTranscript(fullTranscriptRef.current);
         };
 
         recog.onerror = (err: any) => {
-          console.error('Speech recognition error:', err);
+          console.error('Full error event:', err);
         };
 
-        setRecognition(recog);
+        recog.onend = () => {
+          if (!shouldStopRef.current) {
+            recog.start();
+          }
+        };
+
+        recognitionRef.current = recog;
       }
     }
-  }, [onTranscript]);
+  }, []);
+
+  useEffect(() => {
+    if (transcript) {
+      onTranscript(transcript);
+    }
+  }, [transcript, onTranscript]);
 
   const handleStart = () => {
-    if (recognition) {
+    if (recognitionRef.current) {
       setTranscript('');
+      fullTranscriptRef.current = '';
+      shouldStopRef.current = false;
       setRecording(true);
-      recognition.start();
+      recognitionRef.current.start();
     }
   };
 
   const handleStop = () => {
-    if (recognition) {
+    if (recognitionRef.current) {
+      shouldStopRef.current = true;
       setRecording(false);
-      recognition.stop();
+      recognitionRef.current.stop();
     }
   };
 
