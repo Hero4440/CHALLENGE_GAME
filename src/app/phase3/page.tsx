@@ -1,13 +1,12 @@
-// src/app/phase3/page.tsx
-
 'use client';
-import { downloadReport } from '@/lib/report';
 
-import { useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { VoiceRecorder } from '@/components/VoiceRecorder';
 import { questions } from '@/constants/questions';
+import { downloadReport } from '@/lib/report';
+import { motion } from 'framer-motion';
 
 export default function PhaseThreePage() {
   const router = useRouter();
@@ -15,23 +14,44 @@ export default function PhaseThreePage() {
   const [loading, setLoading] = useState(false);
   const [showFeedback, setShowFeedback] = useState(false);
   const [feedback, setFeedback] = useState('');
+  const [finalPackage, setFinalPackage] = useState<any>(null);
 
-  const handleAnswerChange = (key: string, value: string) => {
-    setAnswers({ ...answers, [key]: value });
+  useEffect(() => {
+    try {
+      const stored = localStorage.getItem('finalPackage');
+      if (stored) {
+        setFinalPackage(JSON.parse(stored));
+      }
+    } catch (err) {
+      console.error('Error parsing final package:', err);
+    }
+  }, []);
+
+  const handleAnswerChange = (question: string, response: string) => {
+    setAnswers((prev) => ({ ...prev, [question]: response }));
   };
+
+  const transcriptHandlers = useMemo(() => {
+    const handlers: Record<string, (text: string) => void> = {};
+    questions.forEach((q) => {
+      handlers[q] = (text: string) => handleAnswerChange(q, text);
+    });
+    return handlers;
+  }, []);
 
   const handleSubmit = async () => {
     setLoading(true);
     localStorage.setItem('reflectionAnswers', JSON.stringify(answers));
 
-    // Fetch finalPackage from localStorage
-    const final = JSON.parse(localStorage.getItem('finalPackage') || '{}');
-
     const reflectionText = questions
       .map((q, i) => `Q${i + 1}: ${q}\nA: ${answers[q] || ''}`)
       .join('\n\n');
 
-    const prompt = `The participant selected the following policy package: ${JSON.stringify(final, null, 2)}.\nThey answered the following reflection questions:\n${reflectionText}\n\nPlease provide a 2-3 paragraph feedback focused on ethical and justice-oriented insights, and encourage them based on their effort.`;
+    const prompt = `The participant selected the following policy package: ${JSON.stringify(
+      finalPackage,
+      null,
+      2
+    )}.\nThey answered the following reflection questions:\n${reflectionText}\n\nPlease provide a 2-3 paragraph feedback focused on ethical and justice-oriented insights, and encourage them based on their effort.`;
 
     const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
       method: 'POST',
@@ -60,30 +80,46 @@ export default function PhaseThreePage() {
 
   if (showFeedback) {
     return (
-      <div className="max-w-3xl mx-auto p-6 space-y-6">
-        <h1 className="text-2xl font-bold">Your AI Feedback</h1>
-        <p className="whitespace-pre-wrap text-gray-800">{feedback}</p>
-        <Button onClick={() => router.push('/')}>Finish</Button>
-        <Button variant="secondary" onClick={downloadReport}>Download Report</Button>
-      </div>
+      <motion.div
+        className="max-w-3xl mx-auto p-6 space-y-6"
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+      >
+        <h1 className="text-2xl font-bold text-center">Your AI Feedback</h1>
+        <p className="whitespace-pre-wrap text-gray-800 bg-gray-50 p-4 rounded-xl border border-gray-200 shadow-sm">
+          {feedback}
+        </p>
+        <div className="flex flex-col sm:flex-row gap-4 justify-center">
+          <Button onClick={() => router.push('/')}>Finish</Button>
+          <Button variant="secondary" onClick={downloadReport}>Download Report</Button>
+        </div>
+      </motion.div>
     );
   }
 
   return (
-    <div className="max-w-3xl mx-auto p-6">
-      <h1 className="text-2xl font-bold mb-4">Reflection Questions</h1>
+    <motion.div
+      className="max-w-3xl mx-auto p-6"
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5 }}
+    >
+      <h1 className="text-3xl font-bold mb-6 text-center">Reflection Questions</h1>
       {questions.map((q, i) => (
         <div key={i} className="mb-6">
           <p className="font-medium mb-2">{q}</p>
           <VoiceRecorder
-            onTranscript={(text) => handleAnswerChange(q, text)}
+            onTranscript={transcriptHandlers[q]}
             placeholder="Answer here..."
           />
         </div>
       ))}
-      <Button onClick={handleSubmit} disabled={loading}>
-        {loading ? 'Generating Feedback...' : 'Submit & Get Feedback'}
-      </Button>
-    </div>
+      <div className="flex justify-end mt-6">
+        <Button onClick={handleSubmit} disabled={loading}>
+          {loading ? 'Generating Feedback...' : 'Submit & Get Feedback'}
+        </Button>
+      </div>
+    </motion.div>
   );
 }
