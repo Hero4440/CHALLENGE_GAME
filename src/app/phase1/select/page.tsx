@@ -1,10 +1,12 @@
 'use client';
+
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { BudgetTracker } from '@/components/BudgetTracker';
 import { CategoryCard } from '@/components/CategoryCard';
 import { policyOptions } from '@/constants/policies';
+import { motion } from 'framer-motion';
 
 export default function PolicySelectionPage() {
   const [selections, setSelections] = useState({});
@@ -43,24 +45,40 @@ export default function PolicySelectionPage() {
   };
 
   return (
-    <div className="max-w-4xl mx-auto p-6">
-      <h1 className="text-3xl font-bold mb-6">Select Your Policy Options</h1>
-      <BudgetTracker total={totalCost} max={14} />
+    <main className="relative min-h-screen bg-gray-50 px-6 py-12">
+      {/* Decorative background */}
+      <div className="absolute -top-10 -left-10 w-72 h-72 bg-gradient-to-br from-blue-200 to-purple-200 rounded-full opacity-20 animate-pulse z-0"></div>
+      <div className="absolute -bottom-16 -right-16 w-96 h-96 bg-gradient-to-br from-yellow-100 to-pink-100 rounded-full opacity-20 animate-ping z-0"></div>
+      <div className="absolute inset-0 bg-[url('/grid.svg')] opacity-5 z-0 pointer-events-none" />
 
-      {policyOptions.map((category) => (
-        <CategoryCard
-          key={category.id}
-          category={category}
-          selectedOption={selections[category.id]}
-          onSelect={(option) => handleSelect(category.id, option)}
-        />
-      ))}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6 }}
+        className="relative z-10 max-w-4xl mx-auto"
+      >
+        <div className="sticky top-0 z-10 bg-gray-50 py-4 mb-6 border-b">
+          <h1 className="text-3xl font-bold mb-2">Select Your Policy Options</h1>
+          <BudgetTracker total={totalCost} max={14} />
+        </div>
 
-      {error && <p className="text-red-500 mt-4">{error}</p>}
+        <div className="space-y-6">
+          {policyOptions.map((category) => (
+            <CategoryCard
+              key={category.id}
+              category={category}
+              selectedOption={selections[category.id]}
+              onSelect={(option) => handleSelect(category.id, option)}
+            />
+          ))}
+        </div>
 
-      <div className="mt-6">
-        <Button onClick={handleConfirm}>Confirm Selections</Button>
-      </div>
-    </div>
+        {error && <p className="text-red-500 mt-4 text-center">{error}</p>}
+
+        <div className="mt-8 text-center">
+          <Button onClick={handleConfirm}>Confirm Selections</Button>
+        </div>
+      </motion.div>
+    </main>
   );
 }

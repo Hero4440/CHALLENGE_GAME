@@ -2,6 +2,7 @@
 
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
+import { motion } from 'framer-motion';
 
 const storyText = `
 You are an honorable member of parliament in the Republic of Bean, a unique nation situated in a distant realm beyond Earth. While the country is not wealthy, its citizens enjoy free access to education, healthcare, and various public services. The Republic of Bean prides itself on its multicultural society, comprising three ethnicities and two religious minority groups. Thanks to the country's commitment to secularism, citizens are free to practice their religions without any obstacles.
@@ -23,14 +24,28 @@ export default function StoryPage() {
   const router = useRouter();
 
   return (
-    <div className="max-w-3xl mx-auto p-6">
-      <h1 className="text-3xl font-bold mb-6">Republic of Bean: Background Scenario</h1>
-      <div className="whitespace-pre-wrap text-justify leading-relaxed text-md mb-8">
-        {storyText}
-      </div>
-      <Button onClick={() => router.push('/phase1/select')}>
-        Proceed to Policy Selection
-      </Button>
-    </div>
+    <main className="relative min-h-screen flex items-center justify-center px-6 py-12 bg-gray-50 overflow-hidden">
+      {/* Decorative background */}
+      <div className="absolute -top-10 -left-10 w-72 h-72 bg-gradient-to-br from-indigo-200 to-purple-200 rounded-full opacity-20 animate-pulse z-0"></div>
+      <div className="absolute -bottom-16 -right-16 w-96 h-96 bg-gradient-to-br from-yellow-100 to-pink-100 rounded-full opacity-20 animate-ping z-0"></div>
+      <div className="absolute inset-0 bg-[url('/grid.svg')] opacity-5 z-0 pointer-events-none" />
+
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6 }}
+        className="relative z-10 max-w-3xl mx-auto p-6"
+      >
+        <h1 className="text-3xl font-bold mb-6 text-center">Republic of Bean: Background Scenario</h1>
+        <div className="whitespace-pre-wrap text-justify leading-relaxed text-md mb-8 text-gray-800">
+          {storyText}
+        </div>
+        <div className="text-center">
+          <Button onClick={() => router.push('/phase1/select')}>
+            Proceed to Policy Selection
+          </Button>
+        </div>
+      </motion.div>
+    </main>
   );
 }
