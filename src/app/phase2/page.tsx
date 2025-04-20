@@ -78,7 +78,7 @@ export default function PhaseTwoPage() {
     setVotes({ ...votes, [categoryId]: optionId });
   };
 
-  const handleFinalizeVotes = () => {
+  const handleFinalizeVotes = async () => {
     const final: FinalPackage = {};
     const aiVoteMap: Record<string, { [agentName: string]: string }> = {};
     const aiReasons: Record<string, { [agentName: string]: string }> = {};
