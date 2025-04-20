@@ -83,7 +83,7 @@ export default function Home() {
         </div>
       </motion.div>
       <footer className="mt-12 text-sm text-gray-500">
-      Made with ❤️ by Hero4440 (Tejas) and Aarya
+      Made with ❤️ by Hero4440 (Tejas), Aarya and Dhyey
     </footer>
     </main>
   );

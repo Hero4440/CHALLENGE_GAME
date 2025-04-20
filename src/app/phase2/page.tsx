@@ -1,5 +1,3 @@
-// src/app/phase2/page.tsx
-
 'use client';
 
 import { useEffect, useState } from 'react';
@@ -12,6 +10,7 @@ import { Button } from '@/components/ui/button';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
 import { getAgentResponse } from '@/lib/openai';
+import { motion } from 'framer-motion';
 
 interface Message {
   speaker: string;
@@ -89,8 +88,14 @@ export default function PhaseTwoPage() {
 
   if (votingStage) {
     return (
-      <div className="max-w-4xl mx-auto p-6">
-        <h1 className="text-2xl font-bold mb-4">Vote on Final Policies</h1>
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+        className="max-w-4xl mx-auto p-6"
+      >
+        <h1 className="text-2xl font-bold mb-6">Vote on Final Policies</h1>
+
         {policyOptions.map((category) => (
           <div key={category.id} className="mb-6">
             <h2 className="text-lg font-semibold mb-2">{category.title}</h2>
@@ -111,33 +116,54 @@ export default function PhaseTwoPage() {
         ))}
 
         <Button onClick={handleFinalizeVotes}>Finalize & Proceed to Reflection</Button>
-      </div>
+      </motion.div>
     );
   }
 
   return (
-    <div className="max-w-4xl mx-auto p-6">
-      <h1 className="text-2xl font-bold mb-4">
+    <motion.div
+      className="max-w-4xl mx-auto p-6"
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5 }}
+    >
+      <h1 className="text-2xl font-bold mb-2">
         Category {categoryIndex + 1} of {policyOptions.length}: {currentCategory.title}
       </h1>
 
-      <ChatPanel messages={chatLog} />
+      {(() => {
+        const selectedChoice = JSON.parse(localStorage.getItem('policyChoices') || '{}')[currentCategory.id];
+        return selectedChoice ? (
+          <p className="text-md mb-4 text-gray-700 italic">
+            <strong>Your Choice:</strong> {selectedChoice.text}{' '}
+            <span className="text-gray-500">(Cost: {selectedChoice.cost})</span>
+          </p>
+        ) : null;
+      })()}
+
+      <ChatPanel messages={chatLog.length ? chatLog : [{ speaker: 'System', text: 'Please share your justification to begin.' }]} />
 
       <div className="mt-4">
         <VoiceRecorder
           onTranscript={(text) => setParticipantMessage(text)}
           placeholder="Explain why you chose your policy..."
         />
-        <Button onClick={handleParticipantSubmit} disabled={isSubmitting || !participantMessage} className="mt-2">
+        <Button
+          onClick={handleParticipantSubmit}
+          disabled={isSubmitting || !participantMessage}
+          className="mt-3"
+        >
           Submit Justification
         </Button>
       </div>
 
       {chatLog.length > 1 && (
         <div className="mt-6">
-          <Button onClick={handleNext}>Next Category</Button>
+          <Button variant="secondary" onClick={handleNext}>
+            Next Category
+          </Button>
         </div>
       )}
-    </div>
+    </motion.div>
   );
 }
