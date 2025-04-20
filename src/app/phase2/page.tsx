@@ -82,29 +82,36 @@ export default function PhaseTwoPage() {
     const final: FinalPackage = {};
     const aiVoteMap: Record<string, { [agentName: string]: string }> = {};
     const aiReasons: Record<string, { [agentName: string]: string }> = {};
-    policyOptions.forEach((cat) => {
-      const allVotes = [votes[cat.id]]; // participant
-      agentProfiles.forEach(() => {
+    for (const cat of policyOptions) {
+      const allVotes = [votes[cat.id]]; // participant's vote
+      aiVoteMap[cat.id] = {};
+      aiReasons[cat.id] = {};
+  
+      for (const agent of agentProfiles) {
         const randomChoice = cat.options[Math.floor(Math.random() * cat.options.length)];
         allVotes.push(randomChoice.id);
-      });
-
+  
+        aiVoteMap[cat.id][agent.name] = randomChoice.id;
+  
+        const reasoning = await getAgentResponse(agent.name, randomChoice.text, cat.title);
+        aiReasons[cat.id][agent.name] = reasoning;
+      }
+  
       const tally: Record<string, number> = {};
       allVotes.forEach((vote) => {
         tally[vote] = (tally[vote] || 0) + 1;
       });
-
+  
       const winnerId = Object.keys(tally).reduce((a, b) => (tally[a] > tally[b] ? a : b));
       const winner = cat.options.find((opt) => opt.id === winnerId);
       if (winner) {
         final[cat.id] = winner;
       }
-    });
+    }
     localStorage.setItem('finalPackage', JSON.stringify(final));
     localStorage.setItem('aiVotes', JSON.stringify(aiVoteMap));
     localStorage.setItem('aiVoteReasons', JSON.stringify(aiReasons));
     router.push('/phase3');
-
   };
   if (votingStage) {
     return (
